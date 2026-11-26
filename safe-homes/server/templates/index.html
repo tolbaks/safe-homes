@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Safe Homes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --burgundy-deep:#4A1620;
+  --burgundy:     #6B1F2A;
+  --gold:         #B8905A;
+  --gold-light:   #E9CFA0;
+  --gold-bright:  #E4C288;
+  --cream-light:  #FBF8F2;
+  --ink:          #2B2320;
+  --muted:        #7A6A5E;
+  --safe:         #4B6350;
+  --warning:      #B8823D;
+  --critical:     #8C2F39;
+  --glass-bg:     rgba(255,255,255,0.38);
+  --glass-bg-2:   rgba(255,255,255,0.5);
+  --glass-border: rgba(255,255,255,0.55);
+  --glass-blur:   18px;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; min-height: 100vh;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: var(--ink); -webkit-font-smoothing: antialiased;
+  position: relative; overflow-x: hidden;
+}
+h1, h2, h3 { font-family: 'Fraunces', serif; font-weight: 500; color: var(--burgundy-deep); margin: 0; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; } }
+
+.bg { position: fixed; inset: 0; z-index: -1; background: linear-gradient(160deg, #F3ECDF 0%, #EFE3D6 100%); }
+.blob {
+  position: fixed; border-radius: 50%; filter: blur(70px); z-index: -1;
+  animation: drift 22s ease-in-out infinite;
+}
+.blob-1 { width: 480px; height: 480px; background: rgba(107,31,42,0.30); top: -140px; left: -100px; animation-duration: 26s; }
+.blob-2 { width: 420px; height: 420px; background: rgba(184,144,90,0.32); bottom: -160px; right: -80px; animation-duration: 20s; animation-delay: -6s; }
+.blob-3 { width: 340px; height: 340px; background: rgba(140,47,57,0.20); top: 40%; right: 12%; animation-duration: 30s; animation-delay: -12s; }
+@keyframes drift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%      { transform: translate(30px, -25px) scale(1.08); }
+}
+
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(74,22,32,0.10);
+}
+
+.site-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 32px; position: sticky; top: 0; z-index: 20;
+}
+.brand { display: flex; align-items: center; gap: 12px; }
+.crest {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: var(--burgundy-deep); border: 1px solid var(--gold);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--gold-light); font-family: 'Fraunces', serif; font-size: 13px;
+}
+.brand-name { font-family: 'Fraunces', serif; font-size: 17px; color: var(--burgundy-deep); }
+.header-right { display: flex; align-items: center; gap: 14px; }
+.clock { font-size: 12.5px; color: var(--muted); }
+.icon-btn {
+  width: 40px; height: 40px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--burgundy-deep); border: none; background: transparent;
+}
+.icon-btn:hover { background: rgba(255,255,255,0.4); }
+.icon-btn svg { width: 19px; height: 19px; }
+
+.wrap { max-width: 1080px; margin: 0 auto; padding: 8px 28px 80px; }
+
+.status-hero {
+  padding: 26px 30px; margin-bottom: 16px;
+  display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;
+}
+.status-hero .state { font-size: 27px; display: flex; align-items: center; }
+.status-hero .state.alert { color: var(--critical); }
+.status-hero .state-sub { color: var(--muted); font-size: 13px; margin-top: 4px; }
+.status-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--safe); display: inline-block; margin-right: 10px; }
+.status-dot.alert { background: var(--critical); animation: pulse 1.6s infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+.db-status-bar {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 12px 20px; margin-bottom: 18px; font-size: 13px;
+}
+.db-pill {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 5px 12px; border-radius: 999px; font-weight: 600; font-size: 12.5px;
+  background: rgba(255,255,255,0.55); border: 1px solid var(--glass-border);
+}
+.db-pill .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+.db-pill.ok .dot { background: var(--safe); }
+.db-pill.err .dot { background: var(--critical); }
+
+.card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 18px; }
+.sensor-card {
+  padding: 20px 22px; cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.sensor-card:hover { transform: translateY(-3px); box-shadow: 0 14px 34px rgba(74,22,32,0.16); }
+.sensor-card .label { font-size: 12px; color: var(--muted); margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; }
+.sensor-card .value { font-family: 'Fraunces', serif; font-size: 27px; color: var(--burgundy-deep); }
+.sensor-card .value .unit { font-size: 14px; color: var(--muted); margin-left: 3px; font-family: 'Inter'; }
+.sensor-card .spark { height: 34px; margin-top: 8px; }
+.sensor-card.is-alert { box-shadow: 0 0 0 1.5px var(--critical) inset; }
+.sensor-card.is-alert .value { color: var(--critical); }
+.tap-hint { font-size: 10.5px; color: var(--muted); opacity: 0.7; }
+
+.action-row { display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px; margin-bottom: 18px; }
+@media (max-width: 760px) { .action-row { grid-template-columns: 1fr; } }
+.controls-panel { padding: 20px 24px; }
+.controls-panel h2 { font-size: 15px; margin-bottom: 14px; }
+.control-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  padding: 10px 18px; border-radius: 12px;
+  font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+  cursor: pointer; border: 1px solid var(--glass-border);
+  background: rgba(255,255,255,0.5); color: var(--burgundy-deep);
+  transition: background 0.15s ease, transform 0.05s ease;
+}
+.btn:hover:not(:disabled) { background: rgba(255,255,255,0.75); }
+.btn:active:not(:disabled) { transform: translateY(1px); }
+.btn-primary { background: var(--burgundy-deep); color: var(--gold-light); border: none; }
+.btn-primary:hover:not(:disabled) { background: var(--burgundy); }
+.btn-danger { background: rgba(140,47,57,0.85); color: #fff; border: none; }
+.btn-danger:hover:not(:disabled) { background: var(--critical); }
+
+.records-card {
+  padding: 20px 24px; cursor: pointer; display: flex; flex-direction: column; justify-content: center;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.records-card:hover { transform: translateY(-3px); box-shadow: 0 14px 34px rgba(74,22,32,0.16); }
+.records-card h2 { font-size: 15px; margin-bottom: 6px; }
+.records-card p { margin: 0; font-size: 12.5px; color: var(--muted); }
+.records-card .arrow { margin-top: 12px; color: var(--gold); font-size: 13px; font-weight: 600; }
+
+.overlay {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(43,35,32,0.28); backdrop-filter: blur(4px);
+  display: none; align-items: center; justify-content: center; padding: 20px;
+}
+.overlay.show { display: flex; }
+.modal {
+  width: 100%; max-width: 420px; padding: 28px;
+  animation: pop 0.2s ease-out;
+}
+.modal.wide { max-width: 720px; }
+@keyframes pop { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+.modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+.modal-header h3 { font-size: 19px; }
+.modal-close {
+  width: 30px; height: 30px; border-radius: 50%; border: none; cursor: pointer;
+  background: rgba(255,255,255,0.5); color: var(--burgundy-deep); font-size: 15px;
+  display: flex; align-items: center; justify-content: center;
+}
+.modal-close:hover { background: rgba(255,255,255,0.8); }
+
+.modal-big-value { font-family: 'Fraunces', serif; font-size: 44px; color: var(--burgundy-deep); }
+.modal-big-value .unit { font-size: 20px; color: var(--muted); font-family: 'Inter'; margin-left: 4px; }
+.modal-meta { font-size: 12.5px; color: var(--muted); margin-top: 4px; margin-bottom: 18px; }
+.modal-stats { display: flex; gap: 22px; margin-bottom: 18px; }
+.modal-stat .label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.3px; }
+.modal-stat .value { font-family: 'Fraunces', serif; font-size: 18px; color: var(--burgundy-deep); }
+
+.modal-history { border-top: 1px solid rgba(122,106,94,0.2); padding-top: 14px; }
+.modal-history .row { display: flex; justify-content: space-between; font-size: 13px; padding: 6px 0; color: var(--ink); }
+.modal-history .row .t { color: var(--muted); font-size: 12px; }
+.detail-chart-wrap { width: 100%; height: 130px; margin-bottom: 4px; }
+.detail-chart-wrap svg { width: 100%; height: 100%; display: block; }
+
+.records-filters { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+.filter-chip {
+  padding: 6px 14px; border-radius: 20px; font-size: 12.5px; cursor: pointer;
+  background: rgba(255,255,255,0.5); border: 1px solid var(--glass-border); color: var(--burgundy-deep);
+}
+.filter-chip.active { background: var(--burgundy-deep); color: var(--gold-light); border-color: var(--burgundy-deep); }
+.records-table-wrap { max-height: 380px; overflow-y: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { position: sticky; top: 0; text-align: left; color: var(--muted); font-weight: 600; font-size: 11.5px; padding: 8px 6px; background: rgba(255,255,255,0.6); backdrop-filter: blur(8px); }
+td { padding: 9px 6px; border-bottom: 1px solid rgba(122,106,94,0.12); }
+
+.slideover-overlay {
+  position: fixed; inset: 0; z-index: 100; background: rgba(43,35,32,0.25);
+  display: none;
+}
+.slideover-overlay.show { display: block; }
+.slideover {
+  position: fixed; top: 0; right: 0; bottom: 0; width: 100%; max-width: 380px;
+  padding: 26px; overflow-y: auto;
+  border-radius: 0; transform: translateX(100%); transition: transform 0.25s ease;
+}
+.slideover-overlay.show .slideover { transform: translateX(0); }
+.slideover h3 { font-size: 19px; margin-bottom: 22px; }
+.threshold-row { margin-bottom: 20px; padding-bottom: 18px; border-bottom: 1px solid rgba(122,106,94,0.15); }
+.threshold-row label { display: block; font-size: 12.5px; font-weight: 600; color: var(--burgundy-deep); margin-bottom: 8px; }
+.threshold-row input {
+  width: 100%; padding: 9px 11px; border-radius: 10px; border: 1px solid var(--glass-border);
+  background: rgba(255,255,255,0.6); font-size: 13.5px; font-family: inherit; color: var(--ink); margin-bottom: 6px;
+}
+
+.toast {
+  position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%) translateY(20px);
+  background: var(--burgundy-deep); color: var(--gold-light);
+  padding: 12px 22px; border-radius: 14px; font-size: 13.5px; z-index: 200;
+  opacity: 0; pointer-events: none; transition: opacity 0.25s ease, transform 0.25s ease;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* Splash & login */
+.hero {
+  min-height: 100vh;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; padding: 60px 24px;
+  position: relative; overflow: hidden;
+  background: linear-gradient(180deg, #4A1620 0%, #350D14 100%);
+  cursor: pointer; text-decoration: none;
+}
+.hero-glow {
+  position: absolute; inset: 0; z-index: 0;
+  background:
+    radial-gradient(circle at 50% 38%, rgba(233,207,160,0.20), transparent 42%),
+    radial-gradient(circle at 12% 108%, rgba(184,144,90,0.12), transparent 45%),
+    radial-gradient(circle at 92% -8%, rgba(184,144,90,0.10), transparent 40%);
+  animation: breathe 7s ease-in-out infinite;
+}
+@keyframes breathe { 0%, 100% { opacity: 0.75; transform: scale(1); } 50% { opacity: 1; transform: scale(1.06); } }
+.hero-texture {
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background: repeating-linear-gradient(115deg, rgba(233,207,160,0.035) 0px, rgba(233,207,160,0.035) 1px, transparent 1px, transparent 64px);
+}
+.motes span {
+  position: absolute; border-radius: 50%;
+  background: radial-gradient(circle, rgba(228,194,136,0.9), rgba(228,194,136,0));
+  opacity: 0; pointer-events: none;
+  animation: mote linear infinite;
+}
+@keyframes mote {
+  0% { transform: translateY(0) translateX(0); opacity: 0; }
+  10% { opacity: 0.55; }
+  90% { opacity: 0.3; }
+  100% { transform: translateY(-140px) translateX(var(--drift-x, 20px)); opacity: 0; }
+}
+.hero-inner { position: relative; z-index: 1; max-width: 620px; }
+.hero-crest-wrap { position: relative; width: 96px; height: 96px; margin: 0 auto 30px; opacity: 0; animation: rise 0.8s ease-out 0.1s forwards; }
+.hero-crest-ring { position: absolute; inset: 0; border-radius: 50%; border: 1px solid rgba(233,207,160,0.35); animation: spin 26s linear infinite; }
+.hero-crest-ring::before, .hero-crest-ring::after { content: ""; position: absolute; width: 4px; height: 4px; border-radius: 50%; background: var(--gold-bright); box-shadow: 0 0 6px rgba(228,194,136,0.8); }
+.hero-crest-ring::before { top: -2px; left: 50%; margin-left: -2px; }
+.hero-crest-ring::after { bottom: -2px; left: 50%; margin-left: -2px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.hero-crest {
+  position: absolute; inset: 10px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(circle at 35% 28%, #6B1F2A, #350D14 78%);
+  border: 1px solid var(--gold);
+  box-shadow: 0 0 0 1px rgba(233,207,160,0.15), 0 14px 34px rgba(0,0,0,0.4);
+  font-family: 'Fraunces', serif; font-size: 24px; color: var(--gold-light); letter-spacing: 1.5px;
+}
+.hero h1 { font-family: 'Fraunces', serif; font-weight: 500; font-size: clamp(44px, 7vw, 68px); color: var(--cream-light); letter-spacing: 0.5px; margin: 0 0 22px; opacity: 0; animation: rise 0.8s ease-out 0.3s forwards; }
+.hero-divider { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 0 auto 26px; width: 180px; opacity: 0; animation: rise 0.8s ease-out 0.5s forwards; }
+.hero-divider .line { height: 1px; flex: 1; background: linear-gradient(90deg, transparent, rgba(233,207,160,0.5)); }
+.hero-divider .line.right { background: linear-gradient(270deg, transparent, rgba(233,207,160,0.5)); }
+.hero-divider .diamond { width: 6px; height: 6px; background: var(--gold-bright); transform: rotate(45deg); box-shadow: 0 0 8px rgba(228,194,136,0.6); }
+.hero p.tagline { font-size: 17.5px; line-height: 1.75; font-style: italic; font-family: 'Fraunces', serif; font-weight: 400; color: rgba(251,248,242,0.82); max-width: 460px; margin: 0 auto 44px; opacity: 0; animation: rise 0.8s ease-out 0.7s forwards; }
+.enter-link { display: inline-flex; align-items: center; gap: 10px; color: var(--gold-light); text-decoration: none; font-size: 13.5px; letter-spacing: 1.5px; text-transform: uppercase; padding-bottom: 6px; border-bottom: 1px solid rgba(233,207,160,0.35); opacity: 0; animation: rise 0.8s ease-out 0.9s forwards, bob 2.2s ease-in-out 1.8s infinite; }
+.enter-link svg { width: 14px; height: 14px; transition: transform 0.2s ease; }
+.hero:hover .enter-link svg { transform: translateX(4px); }
+@keyframes rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(5px); } }
+
+.screen:not(.active){display:none}.screen.active{display:block;animation:fadein .5s ease}.lg.active{display:flex}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+.lg{min-height:100vh;align-items:center;justify-content:center;padding:32px 20px;position:relative;overflow:hidden;background:linear-gradient(180deg,#4A1620 0%,#350D14 100%)}
+.lg .hero-crest-wrap{width:72px;height:72px;margin:0 auto 18px}.lg .hero-crest{font-size:19px}
+.lg-card{position:relative;z-index:1;width:100%;max-width:400px;padding:38px 34px 30px;border-radius:22px;text-align:center;background:rgba(251,248,242,.07);border:1px solid rgba(233,207,160,.25);backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%);box-shadow:0 30px 70px rgba(0,0,0,.35)}
+.lg-card h1{font-family:'Fraunces',serif;font-weight:500;font-size:28px;color:var(--cream-light);margin:0 0 6px}
+.lg-sub{margin:0 0 26px;font-size:13.5px;color:rgba(251,248,242,.62)}
+.lg-field{display:block;text-align:left;margin-bottom:16px}
+.lg-field span{display:block;font-size:12px;font-weight:600;color:var(--gold-light);margin-bottom:7px;letter-spacing:.3px}
+.lg-field input{width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(233,207,160,.28);background:rgba(255,255,255,.07);color:var(--cream-light);font:inherit;font-size:14.5px;outline:none;transition:border-color .2s,background .2s}
+.lg-field input:focus{border-color:var(--gold-bright);background:rgba(255,255,255,.11)}
+.lg-pw{position:relative}.lg-pw input{padding-right:64px}
+.lg-pw button{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--gold-light);font:600 12px 'Inter',sans-serif;cursor:pointer;padding:6px 8px}
+.lg-error{min-height:18px;margin:-4px 0 12px;font-size:12.5px;color:#F0A9A3;text-align:left}
+.lg-btn{width:100%;padding:13px;border:none;border-radius:12px;cursor:pointer;font:600 14.5px 'Inter',sans-serif;letter-spacing:.3px;color:#3A1019;background:linear-gradient(135deg,var(--gold-bright),var(--gold));transition:transform .15s,box-shadow .25s}
+.lg-btn:hover{transform:translateY(-1px);box-shadow:0 8px 22px rgba(184,144,90,.35)}
+.lg-btn:disabled{opacity:.65;cursor:wait}
+.lg-foot{margin-top:20px;font-size:12.5px}.lg-foot a{color:rgba(251,248,242,.6);text-decoration:none}.lg-foot a:hover{color:var(--gold-light)}
+.lg-demo{margin:14px 0 0;font-size:11.5px;color:rgba(251,248,242,.42)}
+
+.mode-panel{padding:18px 24px;margin-bottom:18px}
+.mode-panel h2,.controls-panel h3{font-size:15px;margin-bottom:10px}
+.controls-panel h3{margin-top:16px}
+.btn.on{background:var(--burgundy-deep);color:var(--gold-light);border-color:var(--burgundy-deep)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.meta-line{font-size:13px;color:var(--muted);margin-top:10px}
+.alerts{margin:12px 0 0;padding-left:18px;font-size:14px}
+.alerts.bad{color:var(--critical)}
+#checkResult{font-size:13px;color:var(--muted);align-self:center;margin-top:8px}
+</style>
+</head>
+<body>
+<section class="screen" id="screen-splash">
+<a class="hero" href="#login" aria-label="Enter Safe Homes">
+  <div class="hero-glow"></div>
+  <div class="hero-texture"></div>
+  <div class="motes"></div>
+  <div class="hero-inner">
+    <div class="hero-crest-wrap">
+      <div class="hero-crest-ring"></div>
+      <div class="hero-crest">SH</div>
+    </div>
+    <h1>Safe Homes</h1>
+    <div class="hero-divider"><span class="line"></span><span class="diamond"></span><span class="line right"></span></div>
+    <p class="tagline">Quiet, constant protection for the home you've built — watching day and night, online or off.</p>
+    <span class="enter-link">
+      Enter
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </span>
+  </div>
+</a>
+</section>
+
+<section class="screen lg" id="screen-login">
+<div class="hero-glow"></div><div class="hero-texture"></div><div class="motes"></div>
+<div class="lg-card">
+  <div class="hero-crest-wrap"><div class="hero-crest-ring"></div><div class="hero-crest">SH</div></div>
+  <h1 id="lgTitle">Welcome back</h1>
+  <p class="lg-sub" id="lgSub">Sign in to your home's control panel</p>
+  <form id="lgForm" novalidate>
+    <label class="lg-field" id="lgNameWrap" style="display:none"><span>Full name</span><input type="text" id="lgName" autocomplete="name"></label>
+    <label class="lg-field"><span>Email address</span><input type="email" id="lgEmail" autocomplete="email"></label>
+    <label class="lg-field"><span>Password</span><div class="lg-pw"><input type="password" id="lgPass" autocomplete="current-password"><button type="button" id="lgToggle">Show</button></div></label>
+    <label class="lg-field" id="lgConfWrap" style="display:none"><span>Confirm password</span><input type="password" id="lgConf" autocomplete="new-password"></label>
+    <div class="lg-error" id="lgError" role="alert"></div>
+    <button class="lg-btn" id="lgSubmit" type="submit">Sign in</button>
+  </form>
+  <p class="lg-demo" id="lgDemo"></p>
+  <p class="lg-demo"><a href="#" id="lgSwitch" style="color:var(--gold-light)">New here? Create an account</a></p>
+  <div class="lg-foot"><a href="#splash">&larr; Back</a></div>
+</div>
+</section>
+
+<section class="screen" id="screen-app">
+<div class="bg"></div>
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+<div class="blob blob-3"></div>
+
+<header class="site-header">
+  <div class="brand">
+    <div class="crest">SH</div>
+    <span class="brand-name">Safe Homes</span>
+  </div>
+  <div class="header-right">
+    <span class="clock" id="clock">—</span>
+    <button class="icon-btn" id="settingsBtn" aria-label="Settings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 00-.1-1.2l2-1.6-2-3.4-2.4 1a7 7 0 00-2-1.2L14 3h-4l-.5 2.6a7 7 0 00-2 1.2l-2.4-1-2 3.4 2 1.6A7 7 0 005 12c0 .4 0 .8.1 1.2l-2 1.6 2 3.4 2.4-1a7 7 0 002 1.2L10 21h4l.5-2.6a7 7 0 002-1.2l2.4 1 2-3.4-2-1.6c.1-.4.1-.8.1-1.2z"/></svg>
+    </button>
+    <button class="icon-btn" id="logoutBtn" aria-label="Sign out" title="Sign out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 4H5v16h4"/><path d="M16 8l4 4-4 4"/><path d="M20 12H10"/></svg></button>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="status-hero glass">
+    <div>
+      <div class="state"><span class="status-dot" id="heroDot"></span><span id="heroState">All clear</span></div>
+      <div class="state-sub" id="heroSub">No active alerts &middot; system armed</div>
+    </div>
+  </div>
+
+  <div class="db-status-bar glass" id="dbStatusBar">
+    <span class="db-pill" id="localDbPill"><span class="dot"></span><span id="localDbText">Local DB: checking…</span></span>
+    <span class="db-pill" id="onlineDbPill"><span class="dot"></span><span id="onlineDbText">Online DB: checking…</span></span>
+    <span class="meta-line" style="margin:0" id="dbSyncSummary"></span>
+  </div>
+
+  <div class="mode-panel glass">
+    <h2>Operating mode</h2>
+    <div class="control-row" id="modeRow">
+      <button class="btn" data-mode="AUTO">Auto</button>
+      <button class="btn" data-mode="MAINTENANCE">Maintenance</button>
+      <button class="btn" data-mode="SLEEP">Sleep</button>
+      <button class="btn btn-primary" id="wakeBtn">Wake</button>
+    </div>
+    <div class="control-row" id="outTiles" style="margin-top:12px"></div>
+    <div class="meta-line" id="modeMeta">Loading…</div>
+    <ul class="alerts" id="recList"></ul>
+  </div>
+
+  <div class="card-grid" id="cardGrid"></div>
+
+  <div class="action-row">
+    <div class="controls-panel glass">
+      <h2>Maintenance controls</h2>
+      <p class="meta-line" style="margin:-8px 0 12px">Active only in Maintenance mode. Alarms pause there; readings are still logged as MAINTENANCE.</p>
+      <div class="control-row">
+        <button class="btn btn-primary" id="testAlarmBtn">Sound test alarm</button>
+        <button class="btn btn-danger" id="silenceBtn">Silence alarm</button>
+        <button class="btn" id="syncBtn">Force sync now</button>
+      </div>
+      <h3>Sensor check</h3>
+      <div class="control-row" id="checkRow"></div>
+      <div id="checkResult"></div>
+      <h3>Output devices</h3>
+      <div class="control-row" id="outRow"></div>
+    </div>
+    <div class="records-card glass" id="openRecords">
+      <h2>All records</h2>
+      <p>Every reading, every sensor, in one searchable log.</p>
+      <div class="arrow">View records →</div>
+    </div>
+  </div>
+</div>
+
+<!-- Sensor detail modal -->
+<div class="overlay" id="detailOverlay">
+  <div class="modal glass" id="detailModal">
+    <div class="modal-header">
+      <h3 id="detailTitle">Sensor</h3>
+      <button class="modal-close" data-close="detailOverlay">✕</button>
+    </div>
+    <div class="modal-big-value" id="detailValue">—</div>
+    <div class="modal-meta" id="detailMeta">—</div>
+    <div class="modal-stats">
+      <div class="modal-stat"><div class="label">24h Low</div><div class="value" id="detailLow">—</div></div>
+      <div class="modal-stat"><div class="label">24h High</div><div class="value" id="detailHigh">—</div></div>
+      <div class="modal-stat"><div class="label">Average</div><div class="value" id="detailAvg">—</div></div>
+    </div>
+    <div class="detail-chart-wrap" id="detailChartWrap"></div>
+    <div class="modal-history" id="detailHistory"></div>
+  </div>
+</div>
+
+<!-- Records modal -->
+<div class="overlay" id="recordsOverlay">
+  <div class="modal glass wide">
+    <div class="modal-header">
+      <h3>All records</h3>
+      <button class="modal-close" data-close="recordsOverlay">✕</button>
+    </div>
+    <div class="records-filters" id="recordsFilters"></div>
+    <div class="records-table-wrap">
+      <table>
+        <thead id="recordsHead"></thead>
+        <tbody id="recordsBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Settings slide-over -->
+<div class="slideover-overlay" id="settingsOverlay">
+  <div class="slideover glass" id="settingsPanel">
+    <h3>Alert thresholds</h3>
+    <div id="thresholdsList"></div>
+    <button class="btn btn-primary" id="saveThresholdsBtn" style="width:100%;">Save changes</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+</section>
+
+<script>
+const SENSORS = {
+  motion:      { label: 'Distance', unit: ' cm', color: '#6B1F2A' },
+  temperature: { label: 'Temperature', unit: '°C', color: '#B8905A' },
+  humidity:    { label: 'Humidity', unit: '%', color: '#4B6350' },
+  gas:         { label: 'Smoke / Gas', unit: '', color: '#8C2F39' },
+};
+let HIST = [], TH = {}, ST = null, lastHist = 0;
+const $ = id => document.getElementById(id);
+const fmt = iso => iso ? new Date(iso).toLocaleString('en-PH', { timeZone: 'Asia/Manila', dateStyle: 'short', timeStyle: 'medium' }) : '–';
+const dur = s => s == null ? 'asleep…' : `${Math.floor(s / 3600)}h ${Math.floor(s % 3600 / 60)}m ${s % 60}s`;
+const wait = ms => new Promise(r => setTimeout(r, ms));
+
+async function api(url, opt) {
+  const r = await fetch(url, opt);
+  if (r.status === 401) {
+    sessionStorage.removeItem('sh_user');
+    sessionStorage.removeItem('sh_token');
+    if (location.hash !== '#login') location.hash = '#login';
+    throw new Error('login required');
+  }
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.error || r.statusText);
+  return j;
+}
+const post = (u, b) => api(u, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(b || {}) });
+
+/* Send command and immediately refresh UI state */
+async function sendCmd(body, okMsg) {
+  try {
+    await post('/api/command', body);
+    ST = await api('/api/status');
+    renderStatus(ST);
+    renderCards();
+    if (okMsg) showToast(okMsg);
+    return ST.live;
+  } catch (e) {
+    showToast(e.message);
+    return null;
+  }
+}
+
+function updateClock() {
+  $('clock').textContent = new Date().toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
+}
+updateClock();
+setInterval(updateClock, 30000);
+
+function showToast(msg) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+const points = key => {
+  const arr = HIST.filter(r => r[key] != null).map(r => ({ t: Date.parse(r.ts), v: r[key] }));
+  if (!arr.length && ST && ST.live && ST.live[key] != null) {
+    arr.push({ t: Date.parse(ST.live.updated || new Date().toISOString()), v: ST.live[key] });
+  }
+  return arr;
+};
+
+function renderCards() {
+  const L = ST && ST.live;
+  $('cardGrid').innerHTML = Object.keys(SENSORS).map(key => {
+    const p = points(key), m = SENSORS[key], v = L && L[key] != null ? L[key] : '—';
+    return `<div class="sensor-card glass${ST && ST.breached && ST.breached[key] ? ' is-alert' : ''}" data-key="${key}">
+      <div class="label"><span>${m.label}</span><span class="tap-hint">tap for detail</span></div>
+      <div class="value">${v}<span class="unit">${m.unit}</span></div>
+      <div class="spark">${p.length > 1 ? sparklineSVG(p.map(x => x.v), m.color) : ''}</div></div>`;
+  }).join('');
+  document.querySelectorAll('.sensor-card').forEach(c => c.addEventListener('click', () => openDetail(c.dataset.key)));
+}
+
+function sparklineSVG(values, color) {
+  const w = 200, h = 34, pad = 3;
+  const min = Math.min(...values), max = Math.max(...values);
+  const range = (max - min) || 1;
+  const step = w / (values.length - 1 || 1);
+  const pts = values.map((v, i) => [i * step, h - pad - ((v - min) / range) * (h - pad * 2)]);
+  const line = pts.map((p, i) => (i === 0 ? 'M' : 'L') + p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
+  const area = `${line} L${w},${h} L0,${h} Z`;
+  return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+    <path d="${area}" fill="${color}" opacity="0.14"></path>
+    <path d="${line}" fill="none" stroke="${color}" stroke-width="2" vector-effect="non-scaling-stroke"></path>
+  </svg>`;
+}
+
+function detailChartSVG(ptsIn, color) {
+  const w = 640, h = 160, pad = 8;
+  const values = ptsIn.map(p => p.v);
+  const min = Math.min(...values), max = Math.max(...values);
+  const range = (max - min) || 1;
+  const step = w / (values.length - 1 || 1);
+  const pts = values.map((v, i) => [i * step, pad + (h - pad * 2) - ((v - min) / range) * (h - pad * 2)]);
+  const line = pts.map((p, i) => (i === 0 ? 'M' : 'L') + p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
+  const area = `${line} L${w},${h} L0,${h} Z`;
+  const gridLines = [0.25, 0.5, 0.75].map(f =>
+    `<line x1="0" y1="${h * f}" x2="${w}" y2="${h * f}" stroke="rgba(122,106,94,0.15)" stroke-width="1"></line>`
+  ).join('');
+  const gradId = 'grad-' + Math.random().toString(36).slice(2, 8);
+  return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+    <defs><linearGradient id="${gradId}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="${color}" stop-opacity="0.28"></stop>
+      <stop offset="100%" stop-color="${color}" stop-opacity="0"></stop>
+    </linearGradient></defs>
+    ${gridLines}
+    <path d="${area}" fill="url(#${gradId})"></path>
+    <path d="${line}" fill="none" stroke="${color}" stroke-width="2.5" vector-effect="non-scaling-stroke"></path>
+  </svg>`;
+}
+
+function openDetail(key) {
+  const m = SENSORS[key], p = points(key);
+  if (!p.length) return showToast('No readings available yet');
+  const last = p[p.length - 1], vals = p.map(x => x.v);
+  const avg = Math.round(vals.reduce((a, b) => a + b, 0) / vals.length * 10) / 10;
+  $('detailTitle').textContent = m.label;
+  $('detailValue').innerHTML = `${last.v}<span class="unit">${m.unit}</span>`;
+  $('detailMeta').textContent = `last updated ${timeAgo(last.t)}`;
+  $('detailLow').textContent = Math.min(...vals) + m.unit;
+  $('detailHigh').textContent = Math.max(...vals) + m.unit;
+  $('detailAvg').textContent = avg + m.unit;
+  $('detailHistory').innerHTML = p.slice(-5).reverse().map(x =>
+    `<div class="row"><span>${x.v}${m.unit}</span><span class="t">${new Date(x.t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span></div>`
+  ).join('');
+  $('detailOverlay').classList.add('show');
+  $('detailChartWrap').innerHTML = p.length > 1 ? detailChartSVG(p, m.color) : '';
+}
+
+function timeAgo(t) {
+  if (!t || Number.isNaN(t)) return 'just now';
+  const d = Math.floor((Date.now() - t) / 1000);
+  return d < 60 ? 'just now' : d < 3600 ? Math.floor(d / 60) + 'm ago' : Math.floor(d / 3600) + 'h ago';
+}
+
+let tab = 'readings', page = 0; const PER = 20;
+async function renderRecords() {
+  const f = $('recordsFilters');
+  const chip = (t, label) => `<span class="filter-chip ${tab === t ? 'active' : ''}" data-tab="${t}">${label}</span>`;
+  if (tab === 'readings') {
+    const j = await api(`/api/readings?limit=${PER}&offset=${page * PER}`);
+    $('recordsHead').innerHTML = '<tr><th>Date &amp; time</th><th>Distance</th><th>Temp</th><th>Humidity</th><th>Gas</th><th>Buzzer</th><th>Fan</th><th>LED</th><th>Mode</th><th>Online DB</th></tr>';
+    $('recordsBody').innerHTML = j.rows.map(r => `<tr><td>${r.log_date} ${r.log_time}</td><td>${r.motion != null ? r.motion + ' cm' : '–'}</td><td>${r.temperature}°C</td><td>${r.humidity}%</td><td>${r.gas}</td><td>${r.alarm_state ? 'ON' : 'off'}</td><td>${r.fan ? 'ON' : 'off'}</td><td>${r.led ? 'ON' : 'off'}</td><td>${r.mode}</td><td>${r.synced ? 'synced' : 'waiting'}</td></tr>`).join('')
+      || '<tr><td colspan="10">No readings yet.</td></tr>';
+    f.innerHTML = chip('readings', 'Readings') + chip('sleep', 'Sleep log') +
+      `<span class="filter-chip" data-nav="-1">◀ Newer</span><span class="filter-chip">${j.total} rows · page ${page + 1}</span><span class="filter-chip" data-nav="1">Older ▶</span>`;
+  } else {
+    const j = await api('/api/sleeplog');
+    $('recordsHead').innerHTML = '<tr><th>Sleep start</th><th>Wake time</th><th>Duration</th><th>Online DB</th></tr>';
+    $('recordsBody').innerHTML = j.rows.map(r => `<tr><td>${fmt(r.sleep_start)}</td><td>${fmt(r.wake_time)}</td><td>${dur(r.duration_sec)}</td><td>${r.synced ? 'synced' : 'waiting'}</td></tr>`).join('')
+      || '<tr><td colspan="4">No sleep periods yet.</td></tr>';
+    f.innerHTML = chip('readings', 'Readings') + chip('sleep', 'Sleep log');
+  }
+  f.querySelectorAll('[data-tab]').forEach(c => c.onclick = () => { tab = c.dataset.tab; page = 0; renderRecords(); });
+  f.querySelectorAll('[data-nav]').forEach(c => c.onclick = () => { page = Math.max(0, page + +c.dataset.nav); renderRecords(); });
+}
+$('openRecords').addEventListener('click', () => { renderRecords().catch(e => showToast(e.message)); $('recordsOverlay').classList.add('show'); });
+
+function buildThresholds() {
+  $('thresholdsList').innerHTML = Object.keys(SENSORS).map(k => {
+    const t = TH[k] || { low: null, high: null, enabled: true }, u = SENSORS[k].unit;
+    return `<div class="threshold-row" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+      <label style="flex:1 1 110px">${SENSORS[k].label}${u ? ' (' + u.trim() + ')' : ''}</label>
+      <input type="number" step="any" id="thlow-${k}" placeholder="Low" value="${t.low ?? ''}" style="width:84px">
+      <input type="number" step="any" id="thhigh-${k}" placeholder="High" value="${t.high ?? ''}" style="width:84px">
+      <label><input type="checkbox" id="then-${k}" ${t.enabled ? 'checked' : ''}> On</label></div>`;
+  }).join('') + '<p class="meta-line">Alert when a value is at or below Low, or at or above High. Leave a box empty for no limit.</p>';
+}
+$('settingsBtn').addEventListener('click', () => { buildThresholds(); $('settingsOverlay').classList.add('show'); });
+$('saveThresholdsBtn').addEventListener('click', async () => {
+  const b = {};
+  for (const k of Object.keys(SENSORS)) {
+    const lo = $(`thlow-${k}`).value, hi = $(`thhigh-${k}`).value;
+    if (lo !== '' && hi !== '' && +lo >= +hi) return showToast(`${SENSORS[k].label}: Low must be smaller than High`);
+    b[k] = { low: lo === '' ? null : +lo, high: hi === '' ? null : +hi, enabled: $(`then-${k}`).checked };
+  }
+  try {
+    TH = await post('/api/thresholds', b);
+    $('settingsOverlay').classList.remove('show');
+    await refresh();
+    showToast('Thresholds saved');
+  } catch (e) { showToast(e.message); }
+});
+
+document.querySelectorAll('[data-close]').forEach(btn => {
+  btn.addEventListener('click', () => $(btn.dataset.close).classList.remove('show'));
+});
+['detailOverlay', 'recordsOverlay', 'settingsOverlay'].forEach(id => {
+  $(id).addEventListener('click', e => { if (e.target.id === id) e.currentTarget.classList.remove('show'); });
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') ['detailOverlay', 'recordsOverlay', 'settingsOverlay'].forEach(id => $(id).classList.remove('show'));
+});
+
+document.querySelectorAll('#modeRow [data-mode]').forEach(b => b.addEventListener('click', () => {
+  const m = b.dataset.mode;
+  sendCmd({ cmd: m }, 'Mode set to ' + m);
+}));
+$('wakeBtn').addEventListener('click', () => sendCmd({ cmd: 'WAKE' }, 'Device awake'));
+$('checkRow').innerHTML = Object.keys(SENSORS).map(k => `<button class="btn" data-check="${k}">Check ${SENSORS[k].label}</button>`).join('');
+document.querySelectorAll('[data-check]').forEach(b => b.addEventListener('click', async () => {
+  const k = b.dataset.check;
+  $('checkResult').textContent = 'Reading…';
+  const L = await sendCmd({ cmd: 'READ', target: k }, 'Sensor check sent');
+  $('checkResult').textContent = L && L[k] != null ? `${SENSORS[k].label}: ${L[k]}${SENSORS[k].unit}` : 'No reading yet';
+}));
+$('outRow').innerHTML = ['buzzer', 'fan', 'led'].map(o => `<button class="btn" data-out="${o}" data-val="1">${o} ON</button><button class="btn" data-out="${o}" data-val="0">${o} OFF</button>`).join('');
+const setOut = (o, v) => sendCmd({ cmd: 'SET', target: o, value: v }, `${o} ${v ? 'ON' : 'OFF'}`);
+document.querySelectorAll('[data-out]').forEach(b => b.addEventListener('click', () => setOut(b.dataset.out, +b.dataset.val)));
+$('testAlarmBtn').addEventListener('click', async () => { if (await setOut('buzzer', 1)) { await wait(3000); setOut('buzzer', 0); } });
+$('silenceBtn').addEventListener('click', () => setOut('buzzer', 0));
+$('syncBtn').addEventListener('click', () => post('/api/sync').then(j => { showToast(`Synced ${j.synced} row(s)`); refresh(); }).catch(e => showToast(e.message)));
+
+async function renderDbStatus() {
+  try {
+    const d = await api('/api/db-status');
+    const lp = $('localDbPill'), lt = $('localDbText');
+    lp.className = 'db-pill ' + (d.local_db ? 'ok' : 'err');
+    lt.textContent = d.local_db ? `Local DB connected (${d.local_file})` : 'Local DB disconnected';
+
+    const op = $('onlineDbPill'), ot = $('onlineDbText');
+    op.className = 'db-pill ' + (d.online_db ? 'ok' : 'err');
+    ot.textContent = d.online_db ? 'Online DB connected' : `Online DB: ${d.online_detail}`;
+
+    $('dbSyncSummary').textContent = `${d.unsynced_readings} reading(s), ${d.unsynced_sleep} sleep row(s) pending sync`;
+  } catch (e) {
+    $('localDbPill').className = 'db-pill err';
+    $('localDbText').textContent = 'Local DB: check failed';
+  }
+}
+
+function renderStatus(s) {
+  const L = s.live, asleep = !L.awake, maint = L.mode === 'MAINTENANCE', al = s.alerts || [];
+  document.querySelectorAll('#modeRow [data-mode]').forEach(b => { b.classList.toggle('on', b.dataset.mode === L.mode); b.disabled = asleep; });
+  $('wakeBtn').disabled = !asleep;
+  document.querySelectorAll('#checkRow .btn, #outRow .btn, #testAlarmBtn, #silenceBtn').forEach(b => b.disabled = !maint);
+  $('outTiles').innerHTML = [['Buzzer', L.alarm_state], ['Fan', L.fan], ['LED', L.led]].map(([n, v]) =>
+    `<span class="db-pill ${!asleep && v ? 'ok' : ''}"><span class="dot"></span>${n}: ${!asleep && v ? 'ON' : 'off'}</span>`).join('');
+  $('modeMeta').textContent = `${asleep ? 'Asleep' : 'Awake'} · mode ${L.mode} since ${fmt(L.last_change)} · device ${s.online ? 'online' : 'OFFLINE'} · ${s.unsynced} row(s) waiting for the online database`;
+  $('heroState').textContent = !s.online ? 'Device offline' : asleep ? 'Device asleep' : al.length ? 'Alert' : 'All clear';
+  $('heroDot').className = 'status-dot' + (al.length || !s.online ? ' alert' : '');
+  $('heroSub').textContent = asleep ? 'No live data while asleep' : al.length ? al.length + ' active alert(s)' : 'No active alerts';
+  $('recList').className = 'alerts' + (al.length ? ' bad' : '');
+  $('recList').innerHTML = (al.length ? al : ['All readings are within normal range.']).map(t => `<li>${t}</li>`).join('');
+}
+
+async function refresh() {
+  if (location.hash !== '#app') return;
+  try {
+    if (!Object.keys(TH).length) TH = await api('/api/thresholds');
+    ST = await api('/api/status');
+    renderStatus(ST);
+    renderDbStatus();
+    if (Date.now() - lastHist > 10000 || !HIST.length) {
+      lastHist = Date.now();
+      HIST = (await api('/api/readings?limit=48')).rows.reverse();
+    }
+    renderCards();
+  } catch (e) {}
+}
+window.addEventListener('hashchange', () => { if (location.hash === '#app') refresh(); });
+refresh();
+setInterval(refresh, 1500);
+</script>
+
+<script>
+(function () {
+  var DEMO_MODE = false;
+  var API_BASE = '';
+  var mem = {};
+  var store = {
+    get: function (k) { try { return sessionStorage.getItem(k); } catch (e) { return mem[k] || null; } },
+    set: function (k, v) { try { sessionStorage.setItem(k, v); } catch (e) { mem[k] = v; } },
+    del: function (k) { try { sessionStorage.removeItem(k); } catch (e) { delete mem[k]; } }
+  };
+  var $ = function (id) { return document.getElementById(id); };
+  var titles = { splash: 'Safe Homes', login: 'Sign in · Safe Homes', app: 'Safe Homes — Control' };
+
+  document.querySelectorAll('.motes').forEach(function (el) {
+    for (var i = 0; i < 14; i++) {
+      var s = document.createElement('span'), size = 2 + Math.random() * 3;
+      s.style.width = s.style.height = size + 'px';
+      s.style.left = Math.random() * 100 + '%';
+      s.style.top = 55 + Math.random() * 40 + '%';
+      s.style.setProperty('--drift-x', (Math.random() * 60 - 30) + 'px');
+      s.style.animationDuration = (7 + Math.random() * 8) + 's';
+      s.style.animationDelay = (Math.random() * 8) + 's';
+      el.appendChild(s);
+    }
+  });
+
+  function route() {
+    var h = (location.hash || '').slice(1), authed = !!store.get('sh_user');
+    var t = (h === 'login' || h === 'app' || h === 'splash') ? h : (authed ? 'app' : 'splash');
+    if (t === 'app' && !authed) t = 'login';
+    if (t === 'login' && authed) t = 'app';
+    ['splash', 'login', 'app'].forEach(function (n) { $('screen-' + n).classList.toggle('active', n === t); });
+    document.title = titles[t];
+    window.scrollTo(0, 0);
+  }
+  window.addEventListener('hashchange', route);
+
+  $('lgDemo').textContent = DEMO_MODE ? 'Demo mode — any valid email and password will sign you in.' : '';
+  $('lgToggle').addEventListener('click', function () {
+    var p = $('lgPass'), show = p.type === 'password';
+    p.type = show ? 'text' : 'password';
+    this.textContent = show ? 'Hide' : 'Show';
+  });
+
+  var signup = false;
+  function setMode(on) {
+    signup = on;
+    $('lgNameWrap').style.display = $('lgConfWrap').style.display = on ? '' : 'none';
+    $('lgTitle').textContent = on ? 'Create your account' : 'Welcome back';
+    $('lgSub').textContent = on ? 'Register to use the control panel' : "Sign in to your home's control panel";
+    $('lgSubmit').textContent = on ? 'Create account' : 'Sign in';
+    $('lgSwitch').textContent = on ? 'Already have an account? Sign in' : 'New here? Create an account';
+    $('lgError').textContent = '';
+  }
+  $('lgSwitch').addEventListener('click', function (e) { e.preventDefault(); $('lgDemo').textContent = ''; setMode(!signup); });
+
+  $('lgForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    var err = $('lgError'), btn = $('lgSubmit');
+    var email = $('lgEmail').value.trim(), pass = $('lgPass').value, name = $('lgName').value.trim();
+    function fail(m) { err.textContent = m; }
+    err.textContent = ''; $('lgDemo').textContent = '';
+    if (signup && !name) return fail('Please enter your name.');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail('Please enter a valid email address.');
+    if (!pass) return fail('Please enter your password.');
+    if (signup && pass.length < 8) return fail('Password must be at least 8 characters.');
+    if (signup && pass !== $('lgConf').value) return fail('Passwords do not match.');
+    btn.disabled = true; btn.textContent = signup ? 'Creating…' : 'Signing in…';
+    try {
+      var res = await fetch(API_BASE + (signup ? '/api/auth/register' : '/api/auth/login'), {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fullName: name, email: email, password: pass })
+      });
+      var data = await res.json().catch(function () { return {}; });
+      if (!res.ok) fail(data.error || 'Something went wrong.');
+      else if (signup) { setMode(false); $('lgPass').value = ''; $('lgConf').value = ''; $('lgDemo').textContent = 'Account created. You can now sign in.'; }
+      else { store.set('sh_token', data.token); store.set('sh_user', JSON.stringify(data.user)); $('lgPass').value = ''; location.hash = '#app'; route(); }
+    } catch (x) {
+      fail('Could not reach the server. Is it running?');
+    } finally {
+      btn.disabled = false; btn.textContent = signup ? 'Create account' : 'Sign in';
+    }
+  });
+
+  $('logoutBtn').addEventListener('click', function () {
+    store.del('sh_user'); store.del('sh_token');
+    fetch(API_BASE + '/api/auth/logout', { method: 'POST' }).catch(function () {});
+    location.hash = '#login';
+    route();
+  });
+
+  route();
+})();
+</script>
+</body>
+</html>
